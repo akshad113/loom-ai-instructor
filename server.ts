@@ -236,6 +236,42 @@ async function startServer() {
     res.json({ success: true });
   });
 
+  app.post("/api/modal-chat", async (req, res) => {
+    const { messages } = req.body;
+    const modalApiKey = process.env.MODAL_API_KEY;
+
+    if (!modalApiKey) {
+      return res.status(500).json({ error: "MODAL_API_KEY is not configured." });
+    }
+
+    try {
+      const modalResponse = await fetch("https://api.us-west-2.modal.direct/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${modalApiKey}`,
+        },
+        body: JSON.stringify({
+          model: "zai-org/GLM-5-FP8", // Using the model specified in your curl command
+          messages: messages,
+          max_tokens: 500,
+        }),
+      });
+
+      if (!modalResponse.ok) {
+        const errorText = await modalResponse.text();
+        console.error("Modal API error:", modalResponse.status, errorText);
+        return res.status(modalResponse.status).json({ error: "Failed to get response from Modal API", details: errorText });
+      }
+
+      const data = await modalResponse.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Server error when calling Modal API:", error);
+      res.status(500).json({ error: "Internal server error when proxying to Modal API" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
