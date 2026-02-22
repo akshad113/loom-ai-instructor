@@ -1,0 +1,5 @@
+{
+  "name": "CodeLoom AI Instructor",
+  "description": "A modern AI-powered coding platform with an integrated instructor, IDE, and dynamic curriculum builder.",
+  "requestFramePermissions": ["microphone"]
+}
